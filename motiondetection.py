@@ -6,9 +6,17 @@ import cv2, time, pandas, math
 # importing datetime class from datetime library
 from datetime import datetime
 from datetime import timedelta
+from datetime import time
 import numpy as np
 import time as ti
   
+def in_between(now, start, end):
+    if start <= end:
+        return start <= now < end
+    else: # over midnight e.g., 23:30-04:15
+        return start <= now or now < end
+
+
 # Paths
 imageFolderDir = 'C:\projects\github\\boat-recognition\motionimages'
 DATETIMEFORMAT = "%Y-%m-%d-%H-%M-%S-%f"
@@ -16,13 +24,19 @@ DATETIMEFORMAT = "%Y-%m-%d-%H-%M-%S-%f"
 previous_frame = None
 
 last_photo_taken = datetime.now()
-photo_interval = 1 # seconds
+photo_interval = 0 # seconds
   
 # Capturing video
 video = cv2.VideoCapture(0)
 
 # Infinite while loop to treat stack of image as video
 while True:
+    
+    if not in_between(datetime.now().time(), time(8), time(19)):
+        print(f"time is {str(datetime.now().time())}. Therefore im sleeping. I'll wake up at {str(time(8))}.")
+        cv2.destroyAllWindows()
+        ti.sleep(10 * 60)
+
     # Reading frame(image) from video
     check, original_frame = video.read()
   
@@ -75,13 +89,12 @@ while True:
         print("Contour: " + str(contour_area))
         if contour_area < 10000 and contour_area > 200:
             
-            if datetime.now() - last_photo_taken > timedelta(seconds=photo_interval):
-                save_orig_path = save_orig_path + f"-{contour_area}" + file_extension
-                save_contour_path = save_contour_path + f"-{contour_area}" + file_extension
-                cv2.imwrite(save_orig_path, original_frame)
-                print(f"Saved original image to '{save_orig_path}'")
-                cv2.imwrite(save_contour_path, frame[y:cy, x:cx])
-                last_photo_taken = datetime.now()
+            
+            save_orig_path = save_orig_path + f"-{contour_area}" + file_extension
+            save_contour_path = save_contour_path + f"-{contour_area}" + file_extension
+            cv2.imwrite(save_orig_path, original_frame)
+            print(f"Saved original image to '{save_orig_path}'")
+            cv2.imwrite(save_contour_path, frame[y:cy, x:cx])
             motion = 1
             continue
 
@@ -114,10 +127,13 @@ while True:
             time.append(datetime.now())
         break
 
-    ti.sleep(1)
+    ti.sleep(1.5)
 
   
 video.release()
   
 # Destroying all the windows
 cv2.destroyAllWindows()
+
+
+

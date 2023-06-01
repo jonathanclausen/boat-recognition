@@ -3,11 +3,18 @@ import cv2, time, pandas, math
 # importing datetime class from datetime library
 from datetime import datetime
 from datetime import timedelta
+from datetime import time
 import os
 import numpy as np
 
 import time as ti
 imageFolderDir = r'C:\\projects\\github\\boat-recognition\\motionimages\\good-images'
+
+def in_between(now, start, end):
+    if start <= end:
+        return start <= now < end
+    else: # over midnight e.g., 23:30-04:15
+        return start <= now or now < end
 
 previous_frame = None
 DATETIMEFORMAT = "%Y-%m-%d-%H-%M-%S-%f"
@@ -15,6 +22,10 @@ DATETIMEFORMAT = "%Y-%m-%d-%H-%M-%S-%f"
 for filename in os.scandir(imageFolderDir):
     if filename.is_file():
         print(filename.path)
+
+        if not in_between(datetime.now().time(), time(8), time(19)):
+            print(f"time is {str(datetime.now().time())}. Therefore im sleeping. I'll wake up at {str(time(8))}.")
+            time.sleep(10 * 60)
 
         original_frame = cv2.imread(filename.path)
     
